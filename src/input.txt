@@ -1,0 +1,7 @@
+LITPRG  START  6000
+        LDA    =X'05'
+        ADD    =X'0A'
+        STA    RESULT
+        RSUB
+RESULT  RESW   1
+        END    LITPRG
