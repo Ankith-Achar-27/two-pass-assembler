@@ -3,6 +3,7 @@ import java.io.*;
 
 public class Pass1 {
 
+    private String programName = "";
     private Map<String, Symbol> symtab = new LinkedHashMap<>();
     private List<Literal> littab = new ArrayList<>();
     private List<String> intermediate = new ArrayList<>();
@@ -42,7 +43,8 @@ public class Pass1 {
                     || parts[0].equals("WORD")
                     || parts[0].equals("RESW")
                     || parts[0].equals("RESB")
-                    || parts[0].equals("BYTE")) {
+                    || parts[0].equals("BYTE")
+                    || parts[0].equals("LTORG")) {
 
                 opcode = parts[0];
 
@@ -67,6 +69,7 @@ public class Pass1 {
 
                 startAddress = Integer.parseInt(operand, 16);
                 locctr = startAddress;
+                programName = label;
 
                 // Add program name to SYMTAB
                 if (!label.isEmpty()) {
@@ -88,7 +91,7 @@ public class Pass1 {
             }
 
             /*
-             * Add label to SYMTAB
+             * Add label to SYMTAB (program name on START is not added)
              */
             if (!label.isEmpty()) {
 
@@ -125,12 +128,20 @@ public class Pass1 {
                     if (operand.startsWith("=X")) {
 
                         value = operand.substring(3, operand.length() - 1);
+                        if (value.length() % 2 != 0) {
+                            value = "0" + value;
+                        }
                         length = value.length() / 2;
 
                     } else if (operand.startsWith("=C")) {
 
-                        value = operand.substring(3, operand.length() - 1);
-                        length = value.length();
+                        String chars = operand.substring(3, operand.length() - 1);
+                        StringBuilder hex = new StringBuilder();
+                        for (char c : chars.toCharArray()) {
+                            hex.append(String.format("%02X", (int) c));
+                        }
+                        value = hex.toString();
+                        length = chars.length();
 
                     } else {
                         value = "";
@@ -189,13 +200,13 @@ public class Pass1 {
                             operand.substring(2,
                                     operand.length() - 1).length();
 
-                    locctr += length / 2;
+                    locctr += (length + 1) / 2;
                 }
 
-            } else if (opcode.equals("END")) {
+            } else if (opcode.equals("LTORG") || opcode.equals("END")) {
 
                 /*
-                 * Assign addresses to literals
+                 * Assign addresses to literals and append to intermediate file
                  */
                 for (Literal literal : littab) {
 
@@ -205,11 +216,17 @@ public class Pass1 {
                                 String.format("%04X", locctr)
                         );
 
+                        intermediate.add(
+                                String.format("%04X\t*\t%s", locctr, literal.getLiteral())
+                        );
+
                         locctr += literal.getLength();
                     }
                 }
 
-                break;
+                if (opcode.equals("END")) {
+                    break;
+                }
             }
         }
 
@@ -257,6 +274,10 @@ public class Pass1 {
 
         System.out.println("PROGRAM LENGTH : "
                 + String.format("%04X", programLength));
+    }
+
+    public String getProgramName() {
+        return programName;
     }
 
     public Map<String, Symbol> getSymtab() {

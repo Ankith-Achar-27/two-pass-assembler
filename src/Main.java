@@ -20,6 +20,7 @@ public class Main {
             // =========================
 
             Pass2 pass2 = new Pass2(
+                    pass1.getProgramName(),
                     pass1.getSymtab(),
                     pass1.getLittab(),
                     pass1.getIntermediate(),
