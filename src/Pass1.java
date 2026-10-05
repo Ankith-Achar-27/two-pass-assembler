@@ -188,17 +188,15 @@ public class Pass1 {
 
                 if (operand.startsWith("C")) {
 
-                    int length =
-                            operand.substring(2,
-                                    operand.length() - 1).length();
+                    int length = operand.substring(2,
+                            operand.length() - 1).length();
 
                     locctr += length;
 
                 } else if (operand.startsWith("X")) {
 
-                    int length =
-                            operand.substring(2,
-                                    operand.length() - 1).length();
+                    int length = operand.substring(2,
+                            operand.length() - 1).length();
 
                     locctr += (length + 1) / 2;
                 }
